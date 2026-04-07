@@ -13,13 +13,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to EC2
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "*"
+          target: "/home/ec2-user/"
+
+      - name: Deploy to Apache
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /var/www/html
-            sudo rm -rf *
-            echo "<h1>Hello from DevOps Pipeline 🚀</h1><p>Version 2</p>" | sudo tee index.html
+            sudo rm -rf /var/www/html/*
+            sudo cp -r /home/ec2-user/* /var/www/html/
